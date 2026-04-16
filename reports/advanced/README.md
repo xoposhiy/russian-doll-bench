@@ -1,0 +1,1 @@
+Experiment with simplified system prompts without explicit instructions to check the working directory and updating main.py

@@ -1,0 +1,77 @@
+Terminal type and seed: HashTerminal, seed=42
+   [terminal] HASH <<
+   [terminal] HASH >> HASH-TERMINAL
+      CMDS: ACT, HEX, HLP, SND
+      USE ACT TO ACTIVATE TERMINAL
+      USE HEX TO GET HASH EXAMPLES
+      USE HLP FOR HELP
+      USE SND TO COMMUNICATE WITH NESTED TERMINAL AFTER ACTIVATION
+
+   [hidden] [note] Agent starts from help because command names are abbreviated and hash syntax matters.
+
+   [terminal] HASH << HLP
+   [terminal] HASH >> HASH-TERMINAL IS OFFLINE
+      
+      SYNTAX:
+      ACT hhh
+      HEX
+      HLP
+      SND hhh msg (INACTIVE)
+      
+      hhh - 3 DIGITS msg HASH.
+      
+      HASH EXAMPLES:
+      A -> 041
+      BA -> 143
+      AAA -> 303
+      
+      USE HEX FOR MORE HASH EXAMPLES.
+      
+      ACT HAS A LIMIT OF 128 CALLS. DO NOT BRUTEFORCE.
+      
+      ACTIVATION PHRASE: ZL16F
+
+   [hidden] [note] HEX gives one extra example to validate the recovered polynomial parameter instead of trusting only the help page.
+
+   [terminal] HASH << HEX
+   [terminal] HASH >> HASH IS POLINOMIAL.
+      EXAMPLE: [2YKGJ8891] -> 281
+
+   [tool] write_file hash_solver.py - recover the polynomial parameter from public hash examples and compute message digests
+
+   [tool] run_command python hash_solver.py --recover-parameter - solve for the hidden polynomial parameter using HLP and HEX examples
+
+   [tool] run_command python hash_solver.py --hash ZL16F - compute the digest for the first activation phrase
+
+   [terminal] HASH << ACT F53
+   [terminal] HASH >> OK 1 of 3. NEXT ACTIVATION PHRASE: EPMWE
+
+   [tool] run_command python hash_solver.py --hash EPMWE - compute the digest for the second activation phrase
+
+   [terminal] HASH << ACT 3BE
+   [terminal] HASH >> OK 2 of 3. NEXT ACTIVATION PHRASE: 13YDY
+
+   [tool] run_command python hash_solver.py --hash 13YDY - compute the digest for the third activation phrase
+
+   [terminal] HASH << ACT 11A
+   [terminal] HASH >> OK 3 of 3. ACTIVATED
+      [INNER] Final system terminal. Send HELP for available commands.
+
+   [tool] run_command python hash_solver.py --hash HELP - hash the child HELP command with the recovered polynomial parameter
+
+   [terminal] HASH << SND AE9 HELP
+   [hidden] [terminal] INNER << HELP
+   [hidden] [terminal] INNER >> [INNER] Available commands:
+        ACTIVATE TERMINAL - activate this system
+        HELP              - show this message
+   [terminal] HASH >> RESPONSE: [INNER] Available commands:
+        ACTIVATE TERMINAL - activate this system
+        HELP              - show this message
+
+   [tool] run_command python hash_solver.py --hash 'ACTIVATE TERMINAL' - hash the child activation command with the same helper
+
+   [terminal] HASH << SND F4D ACTIVATE TERMINAL
+   [hidden] [terminal] INNER << ACTIVATE TERMINAL
+   [hidden] [terminal] INNER >> [INNER] Congratulations! You have activated the final terminal. Task complete.
+   [terminal] HASH >> RESPONSE: [INNER] Congratulations! You have activated the final terminal. Task complete.
+Number of iterations spent to solve: 15

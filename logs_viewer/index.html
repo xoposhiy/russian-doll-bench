@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RUSSIAN DOLL // RUN LOGS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #081018;
+      --bg2: #101925;
+      --panel: rgba(16, 25, 37, 0.9);
+      --panel-soft: rgba(255, 255, 255, 0.03);
+      --line: rgba(137, 160, 187, 0.16);
+      --text: #e7eef8;
+      --muted: #89a0bb;
+      --cyan: #6be7ff;
+      --green: #72f1b8;
+      --amber: #ffcb6b;
+      --rose: #ff7aa2;
+      --mono: 'IBM Plex Mono', monospace;
+      --display: 'Space Grotesk', sans-serif;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: var(--mono);
+      background:
+        radial-gradient(circle at top left, rgba(107, 231, 255, 0.12), transparent 22rem),
+        radial-gradient(circle at bottom right, rgba(255, 122, 162, 0.10), transparent 24rem),
+        linear-gradient(180deg, #071019 0%, #0a0f16 100%);
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 300px 360px minmax(0, 1fr);
+    }
+
+    .panel {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar,
+    .runrail {
+      border-right: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(9, 14, 22, 0.96), rgba(12, 19, 29, 0.96));
+      padding: 22px 16px 16px;
+      gap: 16px;
+    }
+
+    .content {
+      min-width: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    }
+
+    .brand-kicker,
+    .panel-kicker {
+      color: var(--cyan);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+    }
+
+    .brand-title,
+    .panel-title,
+    .hero-title {
+      font-family: var(--display);
+      letter-spacing: -0.05em;
+    }
+
+    .brand-title {
+      font-size: 30px;
+      line-height: 0.95;
+      margin-top: 8px;
+    }
+
+    .brand-sub,
+    .panel-sub {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+    }
+
+    .search {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 11px 13px;
+      font: inherit;
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: rgba(107, 231, 255, 0.38);
+      box-shadow: 0 0 0 4px rgba(107, 231, 255, 0.08);
+    }
+
+    .list {
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 4px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.02);
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(107, 231, 255, 0.28);
+      background: rgba(107, 231, 255, 0.05);
+    }
+
+    .card.active {
+      border-color: rgba(107, 231, 255, 0.44);
+      background: linear-gradient(180deg, rgba(107, 231, 255, 0.10), rgba(107, 231, 255, 0.03));
+      box-shadow: inset 0 0 0 1px rgba(107, 231, 255, 0.08);
+    }
+
+    .file-title,
+    .run-title {
+      font-family: var(--display);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      word-break: break-word;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .pillrow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 11px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .pill.green {
+      color: var(--green);
+      border-color: rgba(114, 241, 184, 0.22);
+      background: rgba(114, 241, 184, 0.14);
+    }
+
+    .pill.amber {
+      color: var(--amber);
+      border-color: rgba(255, 203, 107, 0.22);
+      background: rgba(255, 203, 107, 0.14);
+    }
+
+    .hero {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-title {
+      margin: 0;
+      font-size: 36px;
+      line-height: 0.95;
+    }
+
+    .hero-sub {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .hero-stat {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .hero-label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      margin-bottom: 8px;
+    }
+
+    .hero-value {
+      font-family: var(--display);
+      font-size: 21px;
+      letter-spacing: -0.04em;
+      word-break: break-word;
+    }
+
+    .tool-stats {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .tool-stats-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .tool-stats-summary {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tool-stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .tool-stats-table th,
+    .tool-stats-table td {
+      padding: 12px 16px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tool-stats-table th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-weight: 500;
+    }
+
+    .tool-stats-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .tool-name-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .tool-name-main {
+      color: var(--text);
+      font-family: var(--display);
+      font-size: 16px;
+      letter-spacing: -0.03em;
+    }
+
+    .tool-name-sub {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .tool-run-tags {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .tool-run-tag {
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      white-space: normal;
+    }
+
+    .timeline {
+      overflow: auto;
+      padding: 20px 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .iter-group {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.015);
+      overflow: hidden;
+    }
+
+    .iter-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .iter-title {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .iter-badge {
+      font-family: var(--display);
+      font-size: 34px;
+      line-height: 0.9;
+      letter-spacing: -0.07em;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    .iter-label,
+    .section-label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .iter-count {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .iter-events,
+    .field-blocks {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .nested-events {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .terminal-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .terminal-edge {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .terminal-edge-head {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .event {
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--cyan);
+      border-radius: 18px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .event.model { border-left-color: var(--amber); }
+    .event.tool { border-left-color: var(--rose); }
+    .event.benchmark { border-left-color: var(--green); }
+
+    .event summary {
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .event summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .event-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 12px 14px;
+      min-width: 0;
+    }
+
+    .event[open] .event-top {
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 11px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .event-name {
+      font-family: var(--display);
+      font-size: 18px;
+      letter-spacing: -0.03em;
+      flex: 0 0 auto;
+    }
+
+    .event-preview {
+      color: var(--muted);
+      font-size: 12px;
+      flex: 1 1 320px;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .event-time {
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    .event-content {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: fit-content(360px) minmax(120px, 1fr);
+      gap: 8px 18px;
+      font-size: 12px;
+      color: var(--muted);
+      align-items: start;
+    }
+
+    .kv strong {
+      color: var(--text);
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+
+    .kv span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .mono-block {
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.22);
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    @media (max-width: 1380px) {
+      .shell {
+        grid-template-columns: 280px 320px minmax(0, 1fr);
+      }
+      .hero-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1080px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+      .sidebar,
+      .runrail {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+        max-height: 36vh;
+      }
+      .hero-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero,
+      .timeline {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+      .hero-grid,
+      .kv {
+        grid-template-columns: 1fr;
+      }
+      .event-time {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="panel sidebar">
+      <div>
+        <div class="brand-kicker">Russian Doll</div>
+        <div class="brand-title">Run Log<br>Viewer</div>
+        <div class="brand-sub">Structured benchmark telemetry, split by file and by individual agent run.</div>
+      </div>
+      <div class="toolbar">
+        <input id="file-search" class="search" placeholder="filter by file or model…">
+      </div>
+      <div id="file-list" class="list"></div>
+    </aside>
+
+    <aside class="panel runrail">
+      <div>
+        <div class="panel-kicker">Runs</div>
+        <div class="panel-title">Log Segments</div>
+        <div id="runrail-sub" class="panel-sub">Pick a log file to inspect its individual agent runs.</div>
+      </div>
+      <div id="run-list" class="list"></div>
+    </aside>
+
+    <main class="panel content">
+      <section id="hero" class="hero"></section>
+      <section id="timeline" class="timeline"></section>
+    </main>
+  </div>
+
+  <script src="/static/drawdown.js"></script>
+  <script>
+    let allFiles = [];
+    let activeFile = null;
+    let activeRunIndex = 0;
+
+    async function init() {
+      document.getElementById('file-search').addEventListener('input', renderFileList);
+      await loadFiles();
+    }
+
+    async function loadFiles() {
+      const res = await fetch('/run-logs');
+      const data = await res.json();
+      allFiles = data.runs || [];
+      renderFileList();
+      if (allFiles.length) {
+        await openFile(allFiles[0].file_name);
+      } else {
+        renderEmpty();
+      }
+    }
+
+    function renderFileList() {
+      const q = document.getElementById('file-search').value.trim().toLowerCase();
+      const list = document.getElementById('file-list');
+      const files = allFiles.filter(file => {
+        const hay = `${file.model || ''} ${file.file_name}`.toLowerCase();
+        return !q || hay.includes(q);
+      });
+
+      if (!files.length) {
+        list.innerHTML = '<div class="empty">No JSONL log files matched the current filter.</div>';
+        return;
+      }
+
+      list.innerHTML = files.map(file => `
+        <article class="card ${activeFile && activeFile.summary.file_name === file.file_name ? 'active' : ''}" data-file="${esc(file.file_name)}">
+          <div class="file-title">${esc(file.model || file.file_name)}</div>
+          <div class="pillrow">
+            <span class="pill green">validation ${esc(formatFraction(file.validation.passed, file.validation.total))}</span>
+            <span class="pill">out ${esc(formatTokens(file.sum_output_tokens))}</span>
+            <span class="pill">uncached in ${esc(formatTokens(file.sum_uncached_input_tokens))}</span>
+            <span class="pill">in ${esc(formatTokens(file.sum_input_tokens))}</span>
+          </div>
+          <div class="meta">
+            <span>${esc(shortDate(file.started_at))}</span>
+            <span>${esc(file.file_name)}</span>
+          </div>
+        </article>
+      `).join('');
+
+      list.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => openFile(card.dataset.file));
+      });
+    }
+
+    async function openFile(fileName) {
+      const res = await fetch(`/run-logs/${encodeURIComponent(fileName)}`);
+      activeFile = await res.json();
+      activeRunIndex = 0;
+      renderFileList();
+      renderRunList();
+      renderActiveRun();
+    }
+
+    function setActiveRun(index) {
+      activeRunIndex = index;
+      renderRunList();
+      renderActiveRun();
+    }
+
+    function renderRunList() {
+      const runList = document.getElementById('run-list');
+      const subtitle = document.getElementById('runrail-sub');
+      if (!activeFile || !(activeFile.runs || []).length) {
+        subtitle.textContent = 'Pick a log file to inspect its individual agent runs.';
+        runList.innerHTML = '<div class="empty">No runs were found inside this file.</div>';
+        return;
+      }
+
+      subtitle.textContent = `${activeFile.summary.file_name} • ${activeFile.runs.length} run${activeFile.runs.length === 1 ? '' : 's'}`;
+      runList.innerHTML = activeFile.runs.map((run, index) => `
+        <article class="card ${index === activeRunIndex ? 'active' : ''}" data-index="${index}">
+          <div class="run-title">Run ${esc(run.summary.run_index)}</div>
+          <div class="panel-sub">${esc(run.summary.terminal_spec || 'unknown terminal')}</div>
+          <div class="pillrow">
+            <span class="pill amber">activation ${esc(formatFraction(run.summary.score, run.summary.max_score))}</span>
+            <span class="pill green">validation ${esc(formatFraction(run.summary.validation.passed, run.summary.validation.total))}</span>
+            <span class="pill">iterations ${esc(formatIterations(run.summary.iterations))}</span>
+          </div>
+          <div class="meta">
+            <span>${esc(formatDuration(run.summary.duration_seconds))}</span>
+            <span>out ${esc(formatTokens(run.summary.sum_output_tokens))} • uncached in ${esc(formatTokens(run.summary.sum_uncached_input_tokens))} • in ${esc(formatTokens(run.summary.sum_input_tokens))}</span>
+          </div>
+        </article>
+      `).join('');
+
+      runList.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => setActiveRun(Number(card.dataset.index)));
+      });
+    }
+
+    function renderActiveRun() {
+      if (!activeFile || !(activeFile.runs || []).length) {
+        renderEmpty();
+        return;
+      }
+      const run = activeFile.runs[activeRunIndex] || activeFile.runs[0];
+      renderHero(activeFile.summary, run.summary, run.events || []);
+      renderTimeline(run.events || []);
+    }
+
+    function renderHero(fileSummary, runSummary, events) {
+      const toolStats = computeToolStats(events);
+      document.getElementById('hero').innerHTML = `
+        <h1 class="hero-title">${esc(runSummary.model || fileSummary.model || 'unknown model')}</h1>
+        <div class="hero-sub">
+          ${esc(fileSummary.file_name)}<br>
+          Run ${esc(runSummary.run_index)} • ${esc(runSummary.terminal_spec || 'unknown terminal')}<br>
+          ${esc(formatDate(runSummary.started_at))}
+        </div>
+        <div class="hero-grid">
+          <div class="hero-stat">
+            <div class="hero-label">Run Validation</div>
+            <div class="hero-value">${esc(formatFraction(runSummary.validation.passed, runSummary.validation.total))}</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-label">Activation</div>
+            <div class="hero-value">${esc(formatFraction(runSummary.score, runSummary.max_score))}</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-label">Duration</div>
+            <div class="hero-value">${esc(formatDuration(runSummary.duration_seconds))}</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-label">Iterations</div>
+            <div class="hero-value">${esc(formatIterations(runSummary.iterations))}</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-label">Output Tokens</div>
+            <div class="hero-value">${esc(formatTokens(runSummary.sum_output_tokens))}</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-label">Uncached Input</div>
+            <div class="hero-value">${esc(formatTokens(runSummary.sum_uncached_input_tokens))}</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-label">Input Tokens</div>
+            <div class="hero-value">${esc(formatTokens(runSummary.sum_input_tokens))}</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-label">Log Validation</div>
+            <div class="hero-value">${esc(formatFraction(fileSummary.validation.passed, fileSummary.validation.total))}</div>
+          </div>
+        </div>
+        ${renderToolStats(toolStats)}
+      `;
+    }
+
+    function renderToolStats(toolStats) {
+      if (!toolStats.length) {
+        return `
+          <div class="tool-stats">
+            <div class="tool-stats-head">
+              <div>
+                <div class="panel-kicker">Tool Stats</div>
+                <div class="tool-stats-summary">No tool calls were recorded in this run.</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      const totalCalls = toolStats.reduce((sum, stat) => sum + stat.calls, 0);
+      const totalErrors = toolStats.reduce((sum, stat) => sum + stat.errors, 0);
+      return `
+        <div class="tool-stats">
+          <div class="tool-stats-head">
+            <div>
+              <div class="panel-kicker">Tool Stats</div>
+              <div class="tool-stats-summary">${esc(String(totalCalls))} call(s) • ${esc(String(totalErrors))} error(s)</div>
+            </div>
+          </div>
+          <table class="tool-stats-table">
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Calls</th>
+                <th>Errors</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${toolStats.map(stat => `
+                <tr>
+                  <td>
+                    <div class="tool-name-cell">
+                      <div class="tool-name-main">${esc(stat.toolName)}</div>
+                      ${renderToolMeta(stat)}
+                    </div>
+                  </td>
+                  <td>${esc(String(stat.calls))}</td>
+                  <td>${esc(String(stat.errors))}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderTimeline(events) {
+      const el = document.getElementById('timeline');
+      if (!events.length) {
+        el.innerHTML = '<div class="empty">This run exists, but it does not contain any parsed events.</div>';
+        return;
+      }
+
+      const grouped = new Map();
+      for (const event of events) {
+        const forceRunScope = [
+          'run_start',
+          'run_end',
+          'run_summary',
+          'validation',
+          'validation_result',
+          'validation_summary'
+        ].includes(event.event_type);
+        const key = (forceRunScope || event.iteration == null) ? 'run' : `iter:${event.iteration}`;
+        if (!grouped.has(key)) grouped.set(key, []);
+        grouped.get(key).push(event);
+      }
+
+      el.innerHTML = Array.from(grouped.entries()).map(([key, group]) => {
+        const iteration = key === 'run' ? null : group[0].iteration;
+        const label = key === 'run' ? 'Run Scope' : 'Agent Loop';
+        const displayGroup = buildDisplayEvents(group);
+        return `
+          <section class="iter-group">
+            <div class="iter-head">
+              <div class="iter-title">${iteration == null ? esc(label) : `<span class="iter-badge">${esc(iteration)}</span><span class="iter-label">${esc(label)}</span>`}</div>
+              <div class="iter-count">${group.length} event${group.length === 1 ? '' : 's'}</div>
+            </div>
+            <div class="iter-events">
+              ${displayGroup.map(renderDisplayEvent).join('')}
+            </div>
+          </section>
+        `;
+      }).join('');
+    }
+
+    function buildDisplayEvents(events) {
+      return collapseTerminalOverflow(collapseTerminalSequences(collapseValidationSequences(events)));
+    }
+
+    function collapseValidationSequences(events) {
+      const collapsed = [];
+      let index = 0;
+      while (index < events.length) {
+        const event = events[index];
+        if (event.event_type === 'validation') {
+          let endIndex = index + 1;
+          while (endIndex < events.length && events[endIndex].event_type !== 'validation_result') {
+            endIndex += 1;
+          }
+          if (endIndex < events.length) {
+            collapsed.push(buildValidationGroup(events.slice(index, endIndex + 1)));
+            index = endIndex + 1;
+            continue;
+          }
+        }
+        collapsed.push(event);
+        index += 1;
+      }
+      return collapsed;
+    }
+
+    function buildValidationGroup(events) {
+      const validationStart = events[0] || {};
+      const validationResult = [...events].reverse().find(event => event.event_type === 'validation_result') || validationStart;
+      const outermostTerminalId = findOutermostTerminalId(events);
+      const outermostTerminalRequests = outermostTerminalId
+        ? events.filter(event => event.event_type === 'terminal_input' && event.terminal_id === outermostTerminalId).length
+        : 0;
+      return {
+        actor: 'benchmark',
+        event_type: 'validation_group',
+        time: validationResult.time || validationStart.time,
+        terminal_spec: validationResult.terminal_spec || validationStart.terminal_spec,
+        status: validationResult.status,
+        exit_code: validationResult.exit_code,
+        stdout: validationResult.stdout,
+        stderr: validationResult.stderr,
+        outermost_terminal_id: outermostTerminalId,
+        outermost_terminal_requests: outermostTerminalRequests,
+        grouped_events: collapseTerminalOverflow(collapseTerminalSequences(events))
+      };
+    }
+
+    function collapseTerminalSequences(events) {
+      const collapsed = [];
+      let index = 0;
+      while (index < events.length) {
+        const event = events[index];
+        if (event.event_type !== 'terminal_input') {
+          collapsed.push(event);
+          index += 1;
+          continue;
+        }
+
+        let endIndex = index + 1;
+        let depth = 1;
+        while (endIndex < events.length) {
+          if (events[endIndex].event_type === 'terminal_input') {
+            depth += 1;
+          } else if (events[endIndex].event_type === 'terminal_output') {
+            depth -= 1;
+            if (depth === 0) break;
+          }
+          endIndex += 1;
+        }
+
+        if (endIndex < events.length && events[endIndex].event_type === 'terminal_output') {
+          collapsed.push(buildTerminalCallGroup(
+            event,
+            events[endIndex],
+            events.slice(index + 1, endIndex)
+          ));
+          index = endIndex + 1;
+          continue;
+        }
+
+        collapsed.push(event);
+        index += 1;
+      }
+      return collapsed;
+    }
+
+    function buildTerminalCallGroup(inputEvent, outputEvent, middleEvents) {
+      return {
+        actor: inputEvent.actor || outputEvent.actor || 'benchmark',
+        event_type: 'terminal_call_group',
+        time: inputEvent.time || outputEvent.time,
+        terminal_id: inputEvent.terminal_id || outputEvent.terminal_id,
+        payload: inputEvent.payload,
+        output_payload: outputEvent.payload,
+        input_event: inputEvent,
+        output_event: outputEvent,
+        grouped_events: buildDisplayEvents(middleEvents)
+      };
+    }
+
+    function collapseTerminalOverflow(events, maxVisibleCalls = 10) {
+      const collapsed = [];
+      let index = 0;
+      while (index < events.length) {
+        if (events[index].event_type !== 'terminal_call_group') {
+          collapsed.push(events[index]);
+          index += 1;
+          continue;
+        }
+
+        let endIndex = index;
+        while (endIndex < events.length && events[endIndex].event_type === 'terminal_call_group') {
+          endIndex += 1;
+        }
+
+        const streak = events.slice(index, endIndex);
+        collapsed.push(...streak.slice(0, maxVisibleCalls));
+        if (streak.length > maxVisibleCalls) {
+          collapsed.push({
+            actor: 'benchmark',
+            event_type: 'terminal_overflow',
+            time: streak[maxVisibleCalls].time || streak[streak.length - 1].time,
+            hidden_calls: streak.length - maxVisibleCalls,
+            terminal_ids: [...new Set(streak.slice(maxVisibleCalls).map(event => event.terminal_id).filter(Boolean))]
+          });
+        }
+        index = endIndex;
+      }
+      return collapsed;
+    }
+
+    function findOutermostTerminalId(events) {
+      const directTerminalEvent = events.find(event =>
+        ['terminal_input', 'terminal_output', 'terminal_online'].includes(event.event_type) && event.terminal_id
+      );
+      if (directTerminalEvent?.terminal_id) return directTerminalEvent.terminal_id;
+
+      const statusTerminalIds = events.find(event =>
+        Array.isArray(event.status?.terminal_ids) && event.status.terminal_ids.length
+      )?.status?.terminal_ids;
+      if (statusTerminalIds?.length) return statusTerminalIds[0];
+
+      const snapshotTerminalIds = events.find(event =>
+        Array.isArray(event.status_snapshot?.terminal_ids) && event.status_snapshot.terminal_ids.length
+      )?.status_snapshot?.terminal_ids;
+      if (snapshotTerminalIds?.length) return snapshotTerminalIds[0];
+
+      return null;
+    }
+
+    function renderDisplayEvent(event) {
+      if (event.event_type === 'validation_group') return renderValidationGroup(event);
+      if (event.event_type === 'terminal_call_group') return renderTerminalCallGroup(event);
+      if (event.event_type === 'terminal_overflow') return renderTerminalOverflow(event);
+      return renderEvent(event);
+    }
+
+    function renderEvent(event) {
+      const actorClass = event.actor || 'benchmark';
+      const badges = [
+        `<span class="badge">${esc(event.actor || 'event')}</span>`
+      ];
+      if (event.terminal_id) badges.push(`<span class="badge">${esc(event.terminal_id)}</span>`);
+      if (event.tool_name) badges.push(`<span class="badge">${esc(event.tool_name)}</span>`);
+      if (event.mode) badges.push(`<span class="badge">${esc(event.mode)}</span>`);
+      return `
+        <details class="event ${esc(actorClass)}">
+          <summary class="event-top">
+            ${badges.join('')}
+            <div class="event-name">${esc(prettyName(event.event_type))}</div>
+            <div class="event-preview">${esc(summarizeEvent(event))}</div>
+            <div class="event-time">${esc(shortDate(event.time, true))}</div>
+          </summary>
+          <div class="event-content">
+            ${renderStructuredSections(event)}
+          </div>
+        </details>
+      `;
+    }
+
+    function renderValidationGroup(event) {
+      const badges = [
+        `<span class="badge">${esc(event.actor || 'benchmark')}</span>`
+      ];
+
+      return `
+        <details class="event benchmark">
+          <summary class="event-top">
+            ${badges.join('')}
+            <div class="event-name">validation result</div>
+            <div class="event-preview">${esc(summarizeEvent(event))}</div>
+            <div class="event-time">${esc(shortDate(event.time, true))}</div>
+          </summary>
+          <div class="event-content">
+            <div>
+              <div class="section-label">Validation Trace</div>
+              <div class="nested-events">
+                ${event.grouped_events.map(renderDisplayEvent).join('')}
+              </div>
+            </div>
+          </div>
+        </details>
+      `;
+    }
+
+    function renderTerminalCallGroup(event) {
+      const badges = [
+        `<span class="badge">${esc(event.actor || 'benchmark')}</span>`
+      ];
+      if (event.terminal_id) badges.push(`<span class="badge">${esc(event.terminal_id)}</span>`);
+      return `
+        <details class="event ${esc(event.actor || 'benchmark')}">
+          <summary class="event-top">
+            ${badges.join('')}
+            <div class="event-name">terminal call</div>
+            <div class="event-preview">${esc(summarizeEvent(event))}</div>
+            <div class="event-time">${esc(shortDate(event.time, true))}</div>
+          </summary>
+          <div class="event-content">
+            <div class="terminal-flow">
+              <div class="terminal-edge">
+                <div class="terminal-edge-head">Terminal Input</div>
+                <div class="mono-block">${esc(event.payload || '')}</div>
+              </div>
+              ${event.grouped_events.length ? `
+                <div>
+                  <div class="section-label">Between Input And Output</div>
+                  <div class="nested-events">
+                    ${event.grouped_events.map(renderDisplayEvent).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              <div class="terminal-edge">
+                <div class="terminal-edge-head">Terminal Output</div>
+                <div class="mono-block">${esc(event.output_payload || '')}</div>
+              </div>
+            </div>
+          </div>
+        </details>
+      `;
+    }
+
+    function renderTerminalOverflow(event) {
+      return `
+        <details class="event benchmark">
+          <summary class="event-top">
+            <span class="badge">benchmark</span>
+            <div class="event-name">terminal ${esc(event.hidden_calls)} more calls</div>
+            <div class="event-preview">${esc(summarizeEvent(event))}</div>
+            <div class="event-time">${esc(shortDate(event.time, true))}</div>
+          </summary>
+        </details>
+      `;
+    }
+
+    function summarizeEvent(event) {
+      switch (event.event_type) {
+        case 'run_start':
+          return `${event.model || 'unknown model'} on ${event.terminal_spec || 'unknown terminal'}`;
+        case 'run_end':
+          return `activation ${formatFraction(event.score, event.max_score)}${event.done ? ' • done' : ''}`;
+        case 'run_summary':
+          return `activation ${formatFraction(event.score, event.max_score)} • out ${formatTokens(event.sum_output_tokens)} • uncached in ${formatTokens(event.sum_uncached_input_tokens)} • in ${formatTokens(event.sum_input_tokens)}`;
+        case 'model_request':
+          return `${Array.isArray(event.tools) ? event.tools.length : 0} tools available`;
+        case 'model_response':
+          return event.text ? oneLine(event.text) : `${Array.isArray(event.tool_calls) ? event.tool_calls.length : 0} tool call(s)`;
+        case 'model_thought':
+          return oneLine(event.thought || 'Model thought');
+        case 'tool_call':
+          return `${event.tool_name || 'tool'} ${formatToolCallSummary(event)}`;
+        case 'tool_result':
+          return formatToolResultSummary(event);
+        case 'terminal_input':
+          return `${event.terminal_id || 'terminal'} <= ${oneLine(event.payload || '')}`;
+        case 'terminal_output':
+          return `${event.terminal_id || 'terminal'} => ${oneLine(event.payload || '')}`;
+        case 'terminal_online':
+          return `${event.terminal_id || 'terminal'} online`;
+        case 'terminal_call_group':
+          return `${event.terminal_id || 'terminal'} <= ${oneLine(event.payload || '')} • => ${oneLine(event.output_payload || '')}`;
+        case 'terminal_overflow':
+          return event.terminal_ids?.length
+            ? `${event.hidden_calls} hidden call(s) across ${event.terminal_ids.join(', ')}`
+            : `${event.hidden_calls} hidden call(s)`;
+        case 'validation':
+          return event.terminal_spec || 'validation';
+        case 'validation_result':
+          return `${event.terminal_spec || 'validation'} • ${formatFraction(event.status?.online, event.status?.total)}`;
+        case 'validation_group':
+          return `${event.terminal_spec || 'validation'} • ${formatFraction(event.status?.online, event.status?.total)} • outermost ${event.outermost_terminal_requests ?? 0}`;
+        case 'validation_summary':
+          return `validation ${formatFraction(event.number_of_passed_validating_terminals, event.total)}`;
+        default:
+          return oneLine(JSON.stringify(event));
+      }
+    }
+
+    function renderStructuredSections(event) {
+      const sections = [];
+      const fields = detailFields(event);
+      if (fields.length) sections.push(renderKvSection('Fields', fields));
+      const blocks = renderFieldBlocks(event);
+      if (blocks) sections.push(blocks);
+      return sections.join('');
+    }
+
+    function detailFields(event) {
+      const fields = [];
+      const skip = new Set([
+        'actor', 'event_type', 'iteration', 'time', 'arguments', 'tool_calls',
+        'usage_metadata', 'payload', 'result', 'status_snapshot', 'token_metrics',
+        'terminal_activation_steps', 'created_files', 'tool_definitions',
+        'system_prompt', 'thought', 'status', 'sent_messages', 'grouped_events',
+        'output_payload', 'input_event', 'output_event', 'hidden_calls', 'terminal_ids'
+      ]);
+      if (event.score != null && event.max_score != null) fields.push(['Activation', formatFraction(event.score, event.max_score)]);
+      if (event.event_type === 'tool_call' && event.tool_name) fields.push(['Tool', String(event.tool_name)]);
+      if (event.event_type === 'tool_call' && event.tool_name === 'run') {
+        fields.push(['Command', getRunCommand(event) || '—']);
+        fields.push(['Command Label', extractRunCommandLabel(getRunCommand(event))]);
+      }
+      if (event.event_type === 'tool_result' && event.tool_name) fields.push(['Tool', String(event.tool_name)]);
+      if (event.event_type === 'tool_result') {
+        const status = classifyToolResult(event);
+        if (status) {
+          fields.push(['Tool Status', status.isError ? 'error' : 'ok']);
+          if (status.exitCode != null) fields.push(['Tool Exit Code', String(status.exitCode)]);
+        }
+      }
+      if (event.iteration != null) fields.push(['Iteration', String(event.iteration)]);
+      if (event.iterations != null) fields.push(['Iterations', String(event.iterations)]);
+      if (event.sum_output_tokens != null) fields.push(['Tokens.output', formatAnyValue(event.sum_output_tokens)]);
+      if (event.sum_uncached_input_tokens != null) fields.push(['Tokens.uncached_input', formatAnyValue(event.sum_uncached_input_tokens)]);
+      if (event.sum_input_tokens != null) fields.push(['Tokens.input', formatAnyValue(event.sum_input_tokens)]);
+      if (event.total_tokens != null) fields.push(['Tokens.total', formatAnyValue(event.total_tokens)]);
+      if (event.exit_code != null) fields.push(['Exit Code', String(event.exit_code)]);
+      if (event.number_of_passed_validating_terminals != null) fields.push(['Validation Passed', formatFraction(event.number_of_passed_validating_terminals, event.total)]);
+      if (event.status && typeof event.status === 'object') {
+        if (event.status.online != null || event.status.total != null) fields.push(['Status', formatFraction(event.status.online, event.status.total)]);
+        if (event.status.done != null) fields.push(['Done', String(event.status.done)]);
+      }
+      if (event.outermost_terminal_requests != null) fields.push(['Outermost Calls', String(event.outermost_terminal_requests)]);
+      if (event.outermost_terminal_id) fields.push(['Outermost Terminal', String(event.outermost_terminal_id)]);
+      if (event.hidden_calls != null) fields.push(['Hidden Calls', String(event.hidden_calls)]);
+      if (Array.isArray(event.terminal_ids) && event.terminal_ids.length) fields.push(['Terminal IDs', event.terminal_ids.join(', ')]);
+      if (event.token_metrics && typeof event.token_metrics === 'object') {
+        for (const [key, value] of Object.entries(event.token_metrics)) {
+          fields.push([`Tokens.${key}`, formatAnyValue(value)]);
+        }
+      }
+      for (const [key, value] of Object.entries(event || {})) {
+        if (skip.has(key) || value == null) continue;
+        if (typeof value === 'object') continue;
+        if (['score', 'max_score', 'iterations', 'sum_output_tokens', 'sum_uncached_input_tokens', 'sum_input_tokens', 'total_tokens', 'exit_code', 'number_of_passed_validating_terminals', 'total'].includes(key)) continue;
+        fields.push([prettyFieldName(key), formatAnyValue(value)]);
+      }
+      return fields;
+    }
+
+    function renderFieldBlocks(event) {
+      const blocks = [];
+      if (event.payload && (event.event_type === 'terminal_input' || event.event_type === 'terminal_output')) {
+        blocks.push([event.event_type === 'terminal_input' ? 'Terminal Input' : 'Terminal Output', event.payload]);
+      }
+      if (typeof event.result === 'string') {
+        blocks.push(['Result', event.result]);
+      } else if (typeof event.result === 'object' && event.result !== null) {
+        blocks.push(['Result', JSON.stringify(event.result, null, 2)]);
+      }
+      if (typeof event.stdout === 'string' && event.stdout) blocks.push(['Stdout', event.stdout]);
+      if (typeof event.stderr === 'string' && event.stderr) blocks.push(['Stderr', event.stderr]);
+      if (event.arguments) {
+        blocks.push(['Arguments', typeof event.arguments === 'object' ? JSON.stringify(event.arguments, null, 2) : String(event.arguments)]);
+      }
+      if (event.sent_messages) blocks.push(['Sent Messages', JSON.stringify(event.sent_messages, null, 2)]);
+      if (event.tool_calls && event.tool_calls.length) {
+        blocks.push(['Tool Calls', JSON.stringify(event.tool_calls, null, 2)]);
+      }
+      if (event.usage_metadata) blocks.push(['Usage Metadata', JSON.stringify(event.usage_metadata, null, 2)]);
+      if (event.status_snapshot) blocks.push(['Status Snapshot', JSON.stringify(event.status_snapshot, null, 2)]);
+      if (event.status) blocks.push(['Status', JSON.stringify(event.status, null, 2)]);
+      if (event.tool_definitions) blocks.push(['Tool Definitions', JSON.stringify(event.tool_definitions, null, 2)]);
+      if (event.system_prompt) blocks.push(['System Prompt', event.system_prompt]);
+      if (event.thought) blocks.push(['Thought', markdown(event.thought), true]);
+      if (!blocks.length) return '';
+      return `<div class="field-blocks">${blocks.map(([label, value, isHtml]) => `
+        <div>
+          <div class="section-label">${esc(label)}</div>
+          ${isHtml ? value : `<div class="mono-block">${esc(value)}</div>`}
+        </div>
+      `).join('')}</div>`;
+    }
+
+    function renderKvSection(label, fields) {
+      return `
+        <div>
+          <div class="section-label">${esc(label)}</div>
+          <div class="kv">${fields.map(([k, v]) => `<strong>${esc(k)}</strong><span>${esc(v)}</span>`).join('')}</div>
+        </div>
+      `;
+    }
+
+    function renderEmpty() {
+      document.getElementById('run-list').innerHTML = '<div class="empty">No runs available.</div>';
+      document.getElementById('hero').innerHTML = '';
+      document.getElementById('timeline').innerHTML = '<div class="empty">This viewer only lists JSONL benchmark logs. Run the benchmark and reload this page.</div>';
+    }
+
+    function formatFraction(a, b) {
+      if (a == null || b == null) return '—';
+      return `${a} / ${b}`;
+    }
+
+    function formatTokens(value) {
+      if (value == null) return '—';
+      return `${Number(value).toLocaleString()} tok`;
+    }
+
+    function formatIterations(value) {
+      if (value == null) return '—';
+      return String(value);
+    }
+
+    function formatDuration(value) {
+      if (value == null) return '—';
+      if (value < 1) return `${value.toFixed(3)} s`;
+      if (value < 60) return `${value.toFixed(1)} s`;
+      const minutes = Math.floor(value / 60);
+      const seconds = Math.round(value % 60);
+      return `${minutes}m ${seconds}s`;
+    }
+
+    function formatDate(value) {
+      if (!value) return 'unknown time';
+      return new Date(value).toLocaleString();
+    }
+
+    function shortDate(value, withTime = false) {
+      if (!value) return '—';
+      const options = withTime
+        ? { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+        : { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Intl.DateTimeFormat(undefined, options).format(new Date(value));
+    }
+
+    function prettyName(value) {
+      return String(value || '').replace(/_/g, ' ');
+    }
+
+    function prettyFieldName(value) {
+      return String(value || '').replace(/_/g, ' ');
+    }
+
+    function oneLine(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function formatToolArgsPreview(args) {
+      if (!args || typeof args !== 'object') return '';
+      const parts = [];
+      if (args.filename) parts.push(args.filename);
+      if (args.command) parts.push(String(args.command));
+      if (args.content_len != null) parts.push(`${args.content_len} chars`);
+      if (!parts.length) parts.push(Object.keys(args).join(', '));
+      return parts.join(' • ');
+    }
+
+    function formatToolCallSummary(event) {
+      if (event.tool_name === 'run') {
+        const command = getRunCommand(event);
+        return command || formatToolArgsPreview(event.arguments);
+      }
+      return formatToolArgsPreview(event.arguments);
+    }
+
+    function formatToolResultSummary(event) {
+      const status = classifyToolResult(event);
+      if (!status) {
+        return typeof event.result === 'string'
+          ? oneLine(event.result)
+          : `${event.tool_name || 'tool'} returned structured result`;
+      }
+      if (event.tool_name === 'run') {
+        const command = getRunCommand(event);
+        const label = extractRunCommandLabel(command);
+        const parts = [label];
+        if (status.exitCode != null) parts.push(`exit ${status.exitCode}`);
+        if (status.isError) parts.push('error');
+        return parts.filter(Boolean).join(' • ');
+      }
+      return `${event.tool_name || 'tool'} • ${status.isError ? 'error' : 'ok'}${status.exitCode != null ? ` • exit ${status.exitCode}` : ''}`;
+    }
+
+    function computeToolStats(events) {
+      const stats = new Map();
+      const pendingCalls = [];
+      for (const event of events || []) {
+        if (event.event_type === 'tool_call' && event.tool_name) {
+          const statKey = getToolStatKey(event);
+          const entry = ensureToolStat(stats, statKey, getToolStatLabel(event));
+          entry.calls += 1;
+          entry.lastPreview = formatToolCallSummary(event);
+          collectToolMetadata(entry, event);
+          pendingCalls.push({ statKey, event });
+          continue;
+        }
+
+        if (event.event_type === 'tool_result' && event.tool_name) {
+          const pendingIndex = pendingCalls.findIndex(call => call.event.tool_name === event.tool_name);
+          if (pendingIndex >= 0) {
+            const [matched] = pendingCalls.splice(pendingIndex, 1);
+            const entry = ensureToolStat(stats, matched.statKey, getToolStatLabel(matched.event));
+            const status = classifyToolResult(event);
+            if (status?.isError) entry.errors += 1;
+            entry.lastPreview = formatToolCallSummary(matched.event);
+            continue;
+          }
+
+          const statKey = getToolStatKey(event);
+          const entry = ensureToolStat(stats, statKey, getToolStatLabel(event));
+          const status = classifyToolResult(event);
+          if (status?.isError) entry.errors += 1;
+        }
+      }
+
+      return Array.from(stats.values())
+        .map(stat => ({
+          toolName: stat.toolName,
+          calls: stat.calls,
+          errors: stat.errors,
+          filenames: Array.from(stat.filenames).sort((a, b) => a.localeCompare(b))
+        }))
+        .sort((a, b) => b.calls - a.calls || a.toolName.localeCompare(b.toolName));
+    }
+
+    function ensureToolStat(stats, statKey, toolName) {
+      if (!stats.has(statKey)) {
+        stats.set(statKey, {
+          toolName,
+          calls: 0,
+          errors: 0,
+          lastPreview: '',
+          filenames: new Set()
+        });
+      }
+      return stats.get(statKey);
+    }
+
+    function collectToolMetadata(entry, event) {
+      if (!['write_file', 'read_file', 'update_file'].includes(event?.tool_name)) return;
+      const filename = event?.arguments?.filename;
+      if (typeof filename === 'string' && filename.trim()) {
+        entry.filenames.add(filename.trim());
+      }
+    }
+
+    function renderToolMeta(stat) {
+      if (Array.isArray(stat.filenames) && stat.filenames.length) {
+        return `<div class="tool-name-sub">${esc(stat.filenames.join(', '))}</div>`;
+      }
+      return '';
+    }
+
+    function getToolStatKey(event) {
+      if (event?.tool_name === 'run') {
+        return `run:${extractRunCommandLabel(getRunCommand(event))}`;
+      }
+      return String(event?.tool_name || 'tool');
+    }
+
+    function getToolStatLabel(event) {
+      if (event?.tool_name === 'run') {
+        return `run ${extractRunCommandLabel(getRunCommand(event))}`;
+      }
+      return String(event?.tool_name || 'tool');
+    }
+
+    function getRunCommand(event) {
+      const command = event?.arguments?.command;
+      if (Array.isArray(command)) return command.join(' ');
+      if (typeof command === 'string') return command.trim();
+      return '';
+    }
+
+    function extractRunCommandLabel(command) {
+      if (!command) return '—';
+      const trimmed = String(command).trim();
+      if (!trimmed) return '—';
+      const firstToken = trimmed.match(/(?:[^\s"]+|"[^"]*")+/)?.[0] || trimmed;
+      return firstToken.replace(/^['"]|['"]$/g, '');
+    }
+
+    function classifyToolResult(event) {
+      const raw = event?.result;
+      if (event?.tool_name === 'run') {
+        const parsedRun = parseRunResult(raw);
+        if (parsedRun) {
+          return {
+            isError: parsedRun.exitCode !== 0,
+            exitCode: parsedRun.exitCode
+          };
+        }
+      }
+
+      if (typeof raw === 'object' && raw !== null) {
+        const exitCode = typeof raw.exit_code === 'number' ? raw.exit_code : null;
+        return {
+          isError: exitCode != null ? exitCode !== 0 : false,
+          exitCode
+        };
+      }
+
+      if (typeof raw !== 'string') return null;
+      const normalized = raw.toLowerCase();
+      const looksLikeError =
+        normalized.includes(' failed') ||
+        normalized.startsWith('failed') ||
+        normalized.includes('error') ||
+        normalized.includes('invalid arguments') ||
+        normalized.includes('unknown tool');
+      return {
+        isError: looksLikeError,
+        exitCode: null
+      };
+    }
+
+    function parseRunResult(raw) {
+      if (typeof raw === 'object' && raw !== null && typeof raw.exit_code === 'number') {
+        return {
+          exitCode: raw.exit_code,
+          stdout: typeof raw.stdout === 'string' ? raw.stdout : '',
+          stderr: typeof raw.stderr === 'string' ? raw.stderr : ''
+        };
+      }
+
+      if (typeof raw !== 'string') return null;
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object' && typeof parsed.exit_code === 'number') {
+          return {
+            exitCode: parsed.exit_code,
+            stdout: typeof parsed.stdout === 'string' ? parsed.stdout : '',
+            stderr: typeof parsed.stderr === 'string' ? parsed.stderr : ''
+          };
+        }
+      } catch (err) {
+      }
+
+      const match = raw.match(/RunResult \[(-?\d+)\]/);
+      if (!match) return null;
+      return {
+        exitCode: Number(match[1]),
+        stdout: '',
+        stderr: ''
+      };
+    }
+
+    function formatAnyValue(value) {
+      if (value == null) return '—';
+      if (typeof value === 'number') return String(value);
+      if (typeof value === 'string') return value;
+      return JSON.stringify(value);
+    }
+
+    function esc(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RUSSIAN DOLL // TERMINAL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #080c08;
+      --bg1:       #0c140c;
+      --bg2:       #0f1a0f;
+      --green:     #00ff41;
+      --green2:    #00cc33;
+      --green3:    #009922;
+      --green4:    #004411;
+      --green5:    #002208;
+      --dim:       #336633;
+      --dimmer:    #1a2a1a;
+      --border:    #1a3a1a;
+      --red:       #ff3333;
+      --glow:      0 0 6px #00ff41, 0 0 14px rgba(0,255,65,.25);
+      --glow-sm:   0 0 4px rgba(0,255,65,.5);
+      --font:      'Share Tech Mono', 'Courier New', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--green);
+      font-family: var(--font);
+      font-size: 13px;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px, transparent 3px,
+        rgba(0,0,0,.07) 3px, rgba(0,0,0,.07) 4px
+      );
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
+      pointer-events: none;
+      z-index: 9997;
+    }
+
+    .page { display: none; position: absolute; inset: 0; }
+    .page.active { display: flex; }
+
+    #page-entry {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+    }
+
+    .logo { text-align: center; }
+
+    .logo-name {
+      font-size: 36px;
+      letter-spacing: 10px;
+      text-transform: uppercase;
+      color: var(--green);
+      text-shadow: var(--glow);
+      line-height: 1;
+    }
+
+    .logo-rule {
+      margin: 10px auto;
+      height: 1px;
+      width: 340px;
+      background: linear-gradient(90deg, transparent, var(--green3), transparent);
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      letter-spacing: 7px;
+      color: var(--dim);
+      text-transform: uppercase;
+    }
+
+    .entry-box {
+      width: 380px;
+      border: 1px solid var(--border);
+      background: var(--bg1);
+      box-shadow: 0 0 30px rgba(0,255,65,.04), inset 0 0 40px rgba(0,255,65,.02);
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .entry-box-title {
+      font-size: 9px;
+      letter-spacing: 4px;
+      color: var(--dim);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .field-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .field-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .field-label {
+      width: 72px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--dim);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .field-input {
+      flex: 1;
+      background: var(--bg5, #030803);
+      border: 1px solid var(--border);
+      color: var(--green);
+      font-family: var(--font);
+      font-size: 13px;
+      padding: 5px 9px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field-input:focus {
+      border-color: var(--green3);
+      box-shadow: var(--glow-sm);
+    }
+
+    .field-help {
+      font-size: 10px;
+      color: var(--green4);
+      line-height: 1.5;
+    }
+
+    .field-input[type=number]::-webkit-inner-spin-button,
+    .field-input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    .entry-sep { border: none; border-top: 1px solid var(--border); }
+
+    .entry-error {
+      min-height: 14px;
+      font-size: 10px;
+      color: var(--red);
+      text-align: center;
+    }
+
+    .btn {
+      position: relative;
+      overflow: hidden;
+      background: transparent;
+      border: 1px solid var(--green3);
+      color: var(--green);
+      font-family: var(--font);
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 8px 20px;
+      cursor: pointer;
+      transition: box-shadow .2s, color .15s;
+    }
+    .btn::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--green);
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .btn:hover:not(:disabled) { box-shadow: var(--glow); color: var(--bg); }
+    .btn:hover:not(:disabled)::after { opacity: 1; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn span { position: relative; z-index: 1; }
+
+    .btn-init {
+      align-self: stretch;
+      font-size: 13px;
+      letter-spacing: 5px;
+      padding: 10px;
+    }
+
+    #page-terminal { flex-direction: column; }
+
+    .topbar {
+      height: 38px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border);
+      padding: 0 14px;
+      overflow: hidden;
+    }
+
+    .tb-brand {
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--green3);
+      white-space: nowrap;
+      margin-right: 16px;
+    }
+
+    .tb-sep { color: var(--border); margin: 0 10px; font-size: 16px; }
+
+    .tb-chips {
+      display: flex;
+      gap: 6px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--dimmer);
+      padding: 2px 9px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--dim);
+      white-space: nowrap;
+      transition: border-color .3s, color .3s, box-shadow .3s;
+    }
+    .chip.online {
+      border-color: var(--green3);
+      color: var(--green);
+      box-shadow: 0 0 8px rgba(0,255,65,.15);
+    }
+    .chip-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--dimmer);
+      transition: background .3s, box-shadow .3s;
+      flex-shrink: 0;
+    }
+    .chip.online .chip-dot {
+      background: var(--green);
+      box-shadow: 0 0 5px var(--green);
+      animation: dot-pulse 2s ease-in-out infinite;
+    }
+    @keyframes dot-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .35; }
+    }
+
+    .tb-session {
+      font-size: 9px;
+      color: var(--green5);
+      white-space: nowrap;
+      margin-left: auto;
+      padding-left: 14px;
+    }
+
+    .tb-config {
+      font-size: 9px;
+      color: var(--dim);
+      white-space: nowrap;
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .t-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .main-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+    }
+
+    .output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+      scroll-behavior: smooth;
+    }
+    .output::-webkit-scrollbar { width: 3px; }
+    .output::-webkit-scrollbar-track { background: var(--bg); }
+    .output::-webkit-scrollbar-thumb { background: var(--green4); }
+
+    .out-welcome {
+      color: var(--dim);
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.65;
+      padding: 0 0 0 12px;
+      border-left: 2px solid var(--green5);
+      margin-bottom: 18px;
+    }
+
+    .out-exchange { margin-bottom: 14px; }
+
+    .out-cmd {
+      color: var(--green2);
+      margin-bottom: 3px;
+      word-break: break-all;
+    }
+    .out-cmd::before { content: '❯ '; color: var(--green3); }
+
+    .out-resp {
+      color: var(--green3);
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.65;
+      padding-left: 14px;
+      border-left: 2px solid var(--green5);
+    }
+
+    .out-thinking {
+      color: var(--green4);
+      margin-bottom: 14px;
+    }
+    .out-thinking::before { content: '❯ '; }
+
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .cursor {
+      display: inline-block;
+      width: 7px; height: 12px;
+      background: var(--green4);
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
+      margin-left: 3px;
+    }
+
+    .input-row {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid var(--border);
+      background: var(--bg1);
+      padding: 9px 14px;
+    }
+
+    .input-prompt { color: var(--green3); font-size: 15px; }
+
+    .t-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--green);
+      font-family: var(--font);
+      font-size: 13px;
+      outline: none;
+      caret-color: var(--green);
+    }
+    .t-input::placeholder { color: var(--green4); }
+    .t-input:disabled { opacity: .4; }
+
+    .btn-send { padding: 5px 14px; font-size: 11px; letter-spacing: 2px; }
+
+    .logs-pane {
+      width: 360px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg1);
+    }
+
+    .logs-head {
+      flex-shrink: 0;
+      padding: 9px 13px;
+      font-size: 9px;
+      letter-spacing: 4px;
+      color: var(--dim);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logs-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+    .logs-scroll::-webkit-scrollbar { width: 3px; }
+    .logs-scroll::-webkit-scrollbar-track { background: transparent; }
+    .logs-scroll::-webkit-scrollbar-thumb { background: var(--green4); }
+
+    .log-empty {
+      padding: 18px 13px;
+      font-size: 10px;
+      color: var(--green4);
+      text-align: center;
+    }
+
+    .log-item {
+      border-bottom: 1px solid rgba(26,58,26,.4);
+      cursor: pointer;
+      user-select: none;
+      transition: background .1s;
+    }
+    .log-item:hover { background: rgba(0,255,65,.03); }
+    .log-item.expanded { background: rgba(0,255,65,.05); }
+
+    .log-summary {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 13px;
+    }
+
+    .log-dir {
+      font-size: 10px;
+      font-weight: bold;
+      flex-shrink: 0;
+      width: 20px;
+      text-align: center;
+    }
+    .log-dir.in  { color: var(--green3); }
+    .log-dir.out { color: var(--dim); }
+
+    .log-tid {
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--green4);
+      text-transform: uppercase;
+      flex-shrink: 0;
+      border: 1px solid var(--green5);
+      padding: 1px 5px;
+    }
+
+    .log-preview {
+      flex: 1;
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .log-preview.in  { color: var(--green2); }
+    .log-preview.out { color: var(--dim); }
+
+    .log-chevron {
+      font-size: 9px;
+      color: var(--green5);
+      flex-shrink: 0;
+      transition: transform .15s;
+    }
+    .log-item.expanded .log-chevron { transform: rotate(90deg); }
+
+    .log-body {
+      display: none;
+      padding: 6px 13px 10px 40px;
+      font-size: 11px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-top: 1px solid var(--green5);
+    }
+    .log-body.in  { color: var(--green2); }
+    .log-body.out { color: var(--dim); }
+    .log-item.expanded .log-body { display: block; }
+
+    #page-complete {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      background: radial-gradient(ellipse at center, #001800 0%, var(--bg) 68%);
+    }
+
+    .complete-tag {
+      font-size: 9px;
+      letter-spacing: 6px;
+      color: var(--green3);
+      text-transform: uppercase;
+      animation: flicker 4s infinite;
+    }
+
+    .complete-hero {
+      font-size: 52px;
+      font-weight: normal;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--green);
+      text-shadow: var(--glow);
+      line-height: 1;
+      text-align: center;
+      animation: flicker 4s infinite .3s;
+    }
+
+    .complete-rule {
+      height: 1px;
+      width: 460px;
+      background: linear-gradient(90deg, transparent, var(--green3), transparent);
+    }
+
+    @keyframes flicker {
+      0%,94%,100% { opacity: 1; }
+      95% { opacity: .7; }
+      97% { opacity: 1; }
+      98% { opacity: .5; }
+    }
+
+    .complete-stats {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      background: var(--bg1);
+    }
+    .stat {
+      padding: 14px 28px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-n {
+      font-size: 24px;
+      color: var(--green);
+      text-shadow: var(--glow-sm);
+    }
+    .stat-l {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--dim);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .complete-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .done-chip {
+      border: 1px solid var(--green3);
+      padding: 4px 14px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--green);
+      box-shadow: 0 0 8px rgba(0,255,65,.12);
+    }
+
+    .btn-new { margin-top: 8px; }
+
+    .copy-toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 10010;
+      pointer-events: none;
+      border: 1px solid var(--green3);
+      background: rgba(8, 12, 8, .94);
+      color: var(--green);
+      padding: 7px 12px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      box-shadow: 0 0 16px rgba(0,255,65,.12);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .16s, transform .16s;
+    }
+    .copy-toast.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+<div id="page-entry" class="page active">
+  <div class="logo">
+    <div class="logo-name">Russian Doll</div>
+    <div class="logo-rule"></div>
+    <div class="logo-sub">terminal interface &nbsp;·&nbsp; v2</div>
+  </div>
+
+  <div class="entry-box">
+    <div class="entry-box-title">session config</div>
+    <div class="field-row">
+      <span class="field-label">Terminal</span>
+      <div class="field-stack">
+        <input id="inp-terminal-spec" class="field-input" list="terminal-spec-examples"
+               value="strings-sys32" spellcheck="false" autocomplete="off">
+        <datalist id="terminal-spec-examples">
+          <option value="main"></option>
+          <option value="sys32"></option>
+          <option value="maze"></option>
+          <option value="strings"></option>
+          <option value="sys32-maze"></option>
+          <option value="strings-sys32"></option>
+          <option value="sys32-maze-sys32"></option>
+          <option value="sys32(42)-maze(12121)-sys32(52)"></option>
+        </datalist>
+        <select id="inp-terminal-history" class="field-input"></select>
+        <div class="field-help">Examples: <code>main</code>, <code>sys32-maze</code>, <code>sys32(42)-maze(12121)-sys32(52)</code></div>
+      </div>
+    </div>
+
+    <hr class="entry-sep">
+    <div class="entry-error" id="entry-error"></div>
+    <button class="btn btn-init" id="btn-start" onclick="startSession()">
+      <span>[ initialize session ]</span>
+    </button>
+  </div>
+</div>
+
+<div id="page-terminal" class="page">
+  <div class="topbar">
+    <span class="tb-brand">RD // TERMINAL</span>
+    <span class="tb-sep">│</span>
+    <div class="tb-chips" id="tb-chips"></div>
+    <span class="tb-config" id="tb-config"></span>
+    <span class="tb-session" id="tb-session"></span>
+  </div>
+
+  <div class="t-body">
+    <div class="main-pane" onclick="focusInput(event)">
+      <div class="output" id="output"></div>
+      <div class="input-row">
+        <span class="input-prompt">❯</span>
+        <input id="t-input" class="t-input"
+               placeholder="enter command…"
+               autocomplete="off" spellcheck="false"
+               onkeydown="onKey(event)">
+        <button class="btn btn-send" id="btn-send" onclick="sendMessage()">
+          <span>SEND</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="logs-pane">
+      <div class="logs-head">interaction log</div>
+      <div class="logs-scroll" id="logs-scroll">
+        <div class="log-empty" id="log-empty">no interactions yet</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-complete" class="page">
+  <div class="complete-tag">mission accomplished</div>
+  <div class="complete-hero">All Systems<br>Online</div>
+  <div class="complete-rule"></div>
+
+  <div class="complete-stats">
+    <div class="stat">
+      <div class="stat-n" id="s-msgs">—</div>
+      <div class="stat-l">messages</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" id="s-terms">—</div>
+      <div class="stat-l">terminals</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" id="s-time">—</div>
+      <div class="stat-l">elapsed</div>
+    </div>
+  </div>
+
+  <div class="complete-chips" id="c-chips"></div>
+  <button class="btn btn-new" onclick="resetSession()"><span>[ new session ]</span></button>
+</div>
+
+<div id="copy-toast" class="copy-toast">copied to clipboard</div>
+
+<script>
+const S = {
+  url: '', sid: '',
+  terminalSpec: '',
+  terminalIds: [], onlineFlags: [],
+  msgCount: 0, t0: null,
+  history: [],
+  historyIndex: null,
+  draftInput: '',
+};
+
+const TERMINAL_SPEC_STORAGE_KEY = 'rd-terminal-spec-history-v1';
+const DEFAULT_TERMINAL_SPECS = [
+  'strings-sys32',
+  'sys32',
+  'maze',
+  'strings',
+  'sys32-maze',
+  'sys32-maze-sys32',
+  'main',
+];
+
+let _copyToastTimer = null;
+let _lastCopiedSelection = '';
+
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function startSession() {
+  const url = window.location.origin;
+  const terminalSpecInput = document.getElementById('inp-terminal-spec');
+  const terminalSpec = terminalSpecInput.value.trim();
+  const errEl = document.getElementById('entry-error');
+  const btn = document.getElementById('btn-start');
+
+  errEl.textContent = '';
+  btn.disabled = true;
+  btn.querySelector('span').textContent = '[ connecting… ]';
+
+  try {
+    const startRes = await fetch(`${url}/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ terminal_spec: terminalSpec }),
+    });
+    if (!startRes.ok) {
+      const body = await startRes.json().catch(() => ({}));
+      throw new Error(body.detail || `START HTTP ${startRes.status}`);
+    }
+    const start = await startRes.json();
+
+    S.url = url;
+    S.sid = start.session_id;
+    S.terminalSpec = start.terminal_spec;
+    S.terminalIds = start.terminal_ids;
+    S.onlineFlags = start.terminal_ids.map(() => false);
+    S.msgCount = 0;
+    S.t0 = Date.now();
+    S.history = [];
+    S.historyIndex = null;
+    S.draftInput = '';
+
+    terminalSpecInput.value = start.terminal_spec;
+    saveTerminalSpec(start.terminal_spec);
+    _knownLogLen = 0;
+    initTerminal(start.welcome);
+    show('page-terminal');
+    await checkStatus();
+    await refreshLogs();
+  } catch (e) {
+    errEl.textContent = 'ERROR: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.querySelector('span').textContent = '[ initialize session ]';
+  }
+}
+
+function initTerminal(welcome) {
+  document.getElementById('tb-session').textContent = 'SID ' + S.sid.slice(0, 10) + '…';
+  document.getElementById('tb-config').textContent = S.terminalSpec;
+  renderChips(S.terminalIds, S.onlineFlags);
+
+  const out = document.getElementById('output');
+  out.innerHTML = '';
+  const w = document.createElement('div');
+  w.className = 'out-welcome';
+  w.textContent = welcome;
+  out.appendChild(w);
+  out.scrollTop = out.scrollHeight;
+
+  document.getElementById('logs-scroll').innerHTML =
+    '<div class="log-empty" id="log-empty">no interactions yet</div>';
+
+  document.getElementById('t-input').focus();
+}
+
+function renderChips(ids, flags) {
+  document.getElementById('tb-chips').innerHTML = ids.map((id, i) => `
+    <div class="chip ${flags[i] ? 'online' : ''}" id="chip${i}">
+      <span class="chip-dot"></span>${esc(id)}
+    </div>`).join('');
+}
+
+function refreshChips(flags) {
+  flags.forEach((on, i) => {
+    const c = document.getElementById('chip' + i);
+    if (c) c.className = 'chip' + (on ? ' online' : '');
+  });
+}
+
+function addExchange(cmd, resp) {
+  const out = document.getElementById('output');
+  const el = document.createElement('div');
+  el.className = 'out-exchange';
+  el.innerHTML = `<div class="out-cmd">${esc(cmd)}</div><div class="out-resp">${esc(resp)}</div>`;
+  out.appendChild(el);
+  out.scrollTop = out.scrollHeight;
+}
+
+function setThinking(on) {
+  const out = document.getElementById('output');
+  let el = document.getElementById('thinking');
+  if (on && !el) {
+    el = document.createElement('div');
+    el.id = 'thinking';
+    el.className = 'out-thinking';
+    el.innerHTML = 'awaiting response <span class="cursor"></span>';
+    out.appendChild(el);
+    out.scrollTop = out.scrollHeight;
+  } else if (!on && el) {
+    el.remove();
+  }
+}
+
+function addLogEvent(terminalId, direction, message) {
+  const scroll = document.getElementById('logs-scroll');
+  const empty = document.getElementById('log-empty');
+  if (empty) empty.remove();
+
+  const icon = direction === 'in' ? '▶' : '◀';
+  const preview = message.replace(/\n/g, ' ').slice(0, 80) + (message.length > 80 ? '…' : '');
+
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML =
+    `<div class="log-summary">`
+    + `<span class="log-dir ${direction}">${icon}</span>`
+    + `<span class="log-tid">${esc(terminalId)}</span>`
+    + `<span class="log-preview ${direction}">${esc(preview)}</span>`
+    + `<span class="log-chevron">▶</span>`
+    + `</div>`
+    + `<div class="log-body ${direction}">${esc(message)}</div>`;
+
+  item.addEventListener('click', () => item.classList.toggle('expanded'));
+  scroll.appendChild(item);
+  scroll.scrollTop = scroll.scrollHeight;
+}
+
+let _knownLogLen = 0;
+
+async function sendMessage() {
+  const inp = document.getElementById('t-input');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  if (!S.history.length || S.history[S.history.length - 1] !== msg) {
+    S.history.push(msg);
+  }
+  S.historyIndex = null;
+  S.draftInput = '';
+  inp.value = '';
+
+  setDisabled(true);
+  setThinking(true);
+
+  try {
+    const res = await fetch(`${S.url}/terminal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: msg,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const response = await res.text();
+
+    setThinking(false);
+    addExchange(msg, response);
+    S.msgCount++;
+    await Promise.all([refreshLogs(), checkStatus()]);
+  } catch (e) {
+    setThinking(false);
+    addExchange(msg, '[ERROR] ' + e.message);
+  } finally {
+    setDisabled(false);
+    inp.focus();
+  }
+}
+
+async function refreshLogs() {
+  try {
+    const res = await fetch(`${S.url}/logs`);
+    if (!res.ok) return;
+    const { entries } = await res.json();
+    for (let i = _knownLogLen; i < entries.length; i++) {
+      const e = entries[i];
+      addLogEvent(e.terminal_id, e.direction, e.message);
+    }
+    _knownLogLen = entries.length;
+  } catch (_) {}
+}
+
+async function checkStatus() {
+  try {
+    const res = await fetch(`${S.url}/status`);
+    if (!res.ok) return;
+    const d = await res.json();
+    S.onlineFlags = d.online_flags;
+    refreshChips(d.online_flags);
+    if (d.done) showComplete(d);
+  } catch (_) {}
+}
+
+function setDisabled(on) {
+  document.getElementById('t-input').disabled = on;
+  document.getElementById('btn-send').disabled = on;
+}
+
+function onKey(e) {
+  const inp = document.getElementById('t-input');
+  if (e.key === 'Enter') {
+    sendMessage();
+    return;
+  }
+
+  if (e.key === 'ArrowUp') {
+    if (!S.history.length) return;
+    e.preventDefault();
+    if (S.historyIndex === null) {
+      S.draftInput = inp.value;
+      S.historyIndex = S.history.length - 1;
+    } else if (S.historyIndex > 0) {
+      S.historyIndex -= 1;
+    }
+    inp.value = S.history[S.historyIndex];
+    return;
+  }
+
+  if (e.key === 'ArrowDown') {
+    if (S.historyIndex === null) return;
+    e.preventDefault();
+    if (S.historyIndex < S.history.length - 1) {
+      S.historyIndex += 1;
+      inp.value = S.history[S.historyIndex];
+    } else {
+      S.historyIndex = null;
+      inp.value = S.draftInput;
+    }
+  }
+}
+
+function focusInput(event) {
+  const target = event.target;
+  if (target.closest('#t-input') || target.closest('#btn-send')) return;
+  document.getElementById('t-input').focus();
+}
+
+function showComplete(d) {
+  const elapsed = Math.round((Date.now() - S.t0) / 1000);
+  document.getElementById('s-msgs').textContent = S.msgCount;
+  document.getElementById('s-terms').textContent = d.total;
+  document.getElementById('s-time').textContent = elapsed + 's';
+
+  document.getElementById('c-chips').innerHTML = d.terminal_ids
+    .map(id => `<div class="done-chip">${esc(id)} ✓</div>`).join('');
+
+  show('page-complete');
+}
+
+function resetSession() {
+  _knownLogLen = 0;
+  show('page-entry');
+  hydrateTerminalSpecControls();
+}
+
+function selectionBelongsToTerminal(selection) {
+  if (!selection || selection.rangeCount === 0) return false;
+  const page = document.getElementById('page-terminal');
+  if (!page.classList.contains('active')) return false;
+
+  const range = selection.getRangeAt(0);
+  const startNode = range.startContainer?.nodeType === Node.TEXT_NODE
+    ? range.startContainer.parentElement
+    : range.startContainer;
+  const endNode = range.endContainer?.nodeType === Node.TEXT_NODE
+    ? range.endContainer.parentElement
+    : range.endContainer;
+
+  if (!startNode || !endNode) return false;
+  if (startNode.closest('#t-input') || endNode.closest('#t-input')) return false;
+  return page.contains(startNode) && page.contains(endNode);
+}
+
+async function copySelectionToClipboard() {
+  const selection = window.getSelection();
+  if (!selectionBelongsToTerminal(selection)) return;
+
+  const text = selection.toString().trim();
+  if (!text || text === _lastCopiedSelection) return;
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      document.execCommand('copy');
+      area.remove();
+    }
+    _lastCopiedSelection = text;
+    showCopyToast();
+  } catch (_) {}
+}
+
+function showCopyToast() {
+  const toast = document.getElementById('copy-toast');
+  toast.classList.add('visible');
+  clearTimeout(_copyToastTimer);
+  _copyToastTimer = setTimeout(() => {
+    toast.classList.remove('visible');
+  }, 1200);
+}
+
+document.addEventListener('mouseup', () => {
+  setTimeout(copySelectionToClipboard, 0);
+});
+
+document.addEventListener('keyup', (event) => {
+  if (!event.shiftKey && !event.key.startsWith('Arrow')) return;
+  setTimeout(copySelectionToClipboard, 0);
+});
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function readStoredTerminalSpecs() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TERMINAL_SPEC_STORAGE_KEY) || '[]');
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(x => typeof x === 'string' && x.trim());
+  } catch (_) {
+    return [];
+  }
+}
+
+function writeStoredTerminalSpecs(specs) {
+  localStorage.setItem(TERMINAL_SPEC_STORAGE_KEY, JSON.stringify(specs.slice(0, 8)));
+}
+
+function saveTerminalSpec(spec) {
+  const normalized = String(spec || '').trim();
+  if (!normalized) return;
+  const merged = [normalized, ...readStoredTerminalSpecs().filter(x => x !== normalized)];
+  writeStoredTerminalSpecs(merged);
+  hydrateTerminalSpecControls();
+}
+
+function hydrateTerminalSpecControls() {
+  const input = document.getElementById('inp-terminal-spec');
+  const history = document.getElementById('inp-terminal-history');
+  const stored = readStoredTerminalSpecs();
+  const options = [...new Set([...stored, ...DEFAULT_TERMINAL_SPECS])];
+
+  history.innerHTML = [
+    '<option value="">recent terminal configs…</option>',
+    ...options.map(spec => `<option value="${esc(spec)}">${esc(spec)}</option>`),
+  ].join('');
+
+  if (!input.value.trim()) {
+    input.value = options[0] || 'sys32';
+  }
+}
+
+document.getElementById('inp-terminal-history').addEventListener('change', (event) => {
+  const value = event.target.value;
+  if (!value) return;
+  document.getElementById('inp-terminal-spec').value = value;
+});
+
+hydrateTerminalSpecControls();
+</script>
+</body>
+</html>

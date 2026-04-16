@@ -1,0 +1,6 @@
+model,give_up,read_file,run,update_file,write_file
+claude-opus-4-7,0,2,69,1,3
+gemini-3.1-pro-preview,3,0,967,58,174
+gpt-5,0,2,291,45,26
+gpt-5.4,0,0,107,0,4
+gpt-5.4-2026-03-05,0,0,188,0,6
