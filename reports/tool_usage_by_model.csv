@@ -2,7 +2,6 @@ model,give_up,read_file,run,update_file,write_file
 anthropic/claude-haiku-4-5@20251001,0,20,158,1,29
 anthropic/claude-opus-4-6@default,0,5,124,6,42
 anthropic/claude-sonnet-4-6@default,0,15,155,3,30
-claude-opus-4-7,0,3,64,9,5
 deepseek-ai/deepseek-v3.2,0,28,106,12,42
 gemini-2.5-flash,0,4,116,10,17
 gemini-3-flash-preview,0,12,753,112,167

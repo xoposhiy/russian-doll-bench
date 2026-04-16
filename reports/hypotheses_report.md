@@ -9,7 +9,6 @@ Among episodes where the current training chain is solved (`run_end.done=true`),
 | model | episodes_solved_chain | episodes_solved_chain_but_validation_failed | rate |
 | --- | --- | --- | --- |
 | gpt-5.4-mini-2026-03-17 | 3 | 3 | 100.0% |
-| claude-opus-4-7 | 9 | 6 | 66.7% |
 | gemini-2.5-flash | 6 | 4 | 66.7% |
 | anthropic/claude-haiku-4-5@20251001 | 11 | 7 | 63.6% |
 | deepseek-ai/deepseek-v3.2 | 8 | 5 | 62.5% |
@@ -35,7 +34,6 @@ Among episodes that start after `main.py` already exists from an earlier episode
 | anthropic/claude-haiku-4-5@20251001 | 10 | 0 | 0.0% |
 | anthropic/claude-opus-4-6@default | 7 | 0 | 0.0% |
 | anthropic/claude-sonnet-4-6@default | 6 | 0 | 0.0% |
-| claude-opus-4-7 | 8 | 0 | 0.0% |
 | deepseek-ai/deepseek-v3.2 | 7 | 0 | 0.0% |
 | gemini-3.1-pro-preview | 4 | 0 | 0.0% |
 | gpt-5.4-2026-03-05 | 32 | 0 | 0.0% |
@@ -55,7 +53,6 @@ Count episodes with no `ls` subcommand inside the first 3 agent iterations. `run
 | anthropic/claude-haiku-4-5@20251001 | 11 | 2 | 18.2% |
 | anthropic/claude-opus-4-6@default | 8 | 0 | 0.0% |
 | anthropic/claude-sonnet-4-6@default | 7 | 0 | 0.0% |
-| claude-opus-4-7 | 9 | 0 | 0.0% |
 | deepseek-ai/deepseek-v3.2 | 8 | 0 | 0.0% |
 | gemini-3.1-pro-preview | 5 | 0 | 0.0% |
 | gpt-5.4-2026-03-05 | 35 | 0 | 0.0% |
@@ -67,7 +64,6 @@ Among episodes where all terminals were activated (`run_summary.activated_termin
 
 | model | episodes_with_all_terminals_activated | episodes_without_main_py_update | rate |
 | --- | --- | --- | --- |
-| claude-opus-4-7 | 9 | 6 | 66.7% |
 | gpt-5.4-mini-2026-03-17 | 3 | 1 | 33.3% |
 | gemini-3-flash-preview | 31 | 7 | 22.6% |
 | gpt-5.4-2026-03-05 | 26 | 4 | 15.4% |
@@ -90,7 +86,6 @@ List every created file that is not `*.py`.
 | anthropic/claude-haiku-4-5@20251001 | 3 | KNOWLEDGE_BASE.md |
 | anthropic/claude-opus-4-6@default | 32 | knowledge.md |
 | anthropic/claude-sonnet-4-6@default | 14 | knowledge.md |
-| claude-opus-4-7 | 3 | NOTES.md |
 | deepseek-ai/deepseek-v3.2 | 37 | - |
 | gemini-2.5-flash | 6 | - |
 | gemini-3-flash-preview | 110 | - |
@@ -112,7 +107,6 @@ Compare generator buckets, not raw validation counts: `0-49`, `50-99`, `100-149`
 | gemma-4-31b | 22 | 50.0% | 22.7% | 27.3% |
 | deepseek-ai/deepseek-v3.2 | 8 | 37.5% | 37.5% | 25.0% |
 | zai/glm-5 | 12 | 50.0% | 25.0% | 25.0% |
-| claude-opus-4-7 | 9 | 33.3% | 44.4% | 22.2% |
 | gemini-3-flash-preview | 33 | 39.4% | 39.4% | 21.2% |
 | gpt-5.4-2026-03-05 | 35 | 37.1% | 45.7% | 17.1% |
 | anthropic/claude-opus-4-6@default | 8 | 87.5% | 12.5% | 0.0% |
@@ -136,7 +130,6 @@ Among episodes that create or update `main.py`, count how often there is no late
 | gpt-5.4-mini-2026-03-17 | 8 | 5 | 62.5% |
 | zai/glm-5 | 12 | 7 | 58.3% |
 | anthropic/claude-opus-4-6@default | 7 | 3 | 42.9% |
-| claude-opus-4-7 | 3 | 1 | 33.3% |
 | gemini-3.1-pro-preview | 5 | 1 | 20.0% |
 | anthropic/claude-sonnet-4-6@default | 7 | 1 | 14.3% |
 | gemini-3.1-flash-lite-preview | 1 | 0 | 0.0% |
@@ -154,7 +147,6 @@ Best-effort metric from logs: count files known from previous episodes that are 
 | gemma-4-31b | 21 | 100.0% | 27.05 | decode_welcome.py:13, decoder.py:13, decoder_resp.py:13, encoder_activate.py:13, encoder_help.py:13 |
 | zai/glm-5 | 11 | 100.0% | 68.0 | analyze_encoding.py:11, brute_2char.py:11, brute_3letter.py:11, brute_3lower.py:11, brute_3lower_fast.py:11 |
 | gemini-3-flash-preview | 30 | 90.0% | 21.03 | decode_sys2.py:20, codec.py:15, decode_sys1.py:15, encode_sys1.py:15, decode.py:12 |
-| claude-opus-4-7 | 8 | 87.5% | 0.88 | encode.py:7 |
 | anthropic/claude-sonnet-4-6@default | 6 | 83.3% | 7.5 | /tmp/tmpp7z6j4b_/encode_decode.py:5, encode_decode.py:5, bitmixer_analyze.py:4, bitmixer_solve.py:4, bitmixer_solve2.py:4 |
 | gemini-2.5-flash | 6 | 83.3% | 2.33 | encoding_utils.py:5, encode.py:3, delta_base32_encoder.py:3, codec.py:2, encoder.py:1 |
 | anthropic/claude-haiku-4-5@20251001 | 10 | 70.0% | 0.7 | terminal_handler.py:7 |
@@ -173,7 +165,6 @@ Best-effort metric from the reconstructable `main.py` content: among episodes wh
 | anthropic/claude-haiku-4-5@20251001 | 11 | 0 | 0.0% | - |
 | anthropic/claude-opus-4-6@default | 8 | 0 | 0.0% | - |
 | anthropic/claude-sonnet-4-6@default | 7 | 0 | 0.0% | - |
-| claude-opus-4-7 | 9 | 0 | 0.0% | - |
 | deepseek-ai/deepseek-v3.2 | 8 | 0 | 0.0% | - |
 | gemini-3-flash-preview | 33 | 0 | 0.0% | - |
 | gemini-3.1-flash-lite-preview | 3 | 0 | 0.0% | - |
